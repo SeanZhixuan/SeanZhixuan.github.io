@@ -1,268 +1,308 @@
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#0a1f44">
-<title>lucky作业通</title>
-<style>
-*{box-sizing:border-box}
-body{
-  margin:0;padding:24px 14px;min-height:100vh;
-  background:#0a1f44;color:#fff;
-  font-family:system-ui,"Microsoft Yahei",sans-serif
-}
-.container{max-width:720px;margin:auto}
-h1{text-align:center;color:#e8f1ff;margin-bottom:8px}
-.subtitle{text-align:center;color:#9db8e0;font-size:14px;margin-bottom:24px}
-.card{
-  background:#122c5c;border-radius:12px;padding:22px;
-  margin-bottom:20px;box-shadow:0 4px 16px #0003
-}
-h2{font-size:19px;color:#d6e4ff;margin-top:0}
-textarea,input{
-  width:100%;padding:13px;border:1px solid #274574;
-  border-radius:8px;background:#0d244e;color:#fff;font:inherit
-}
-textarea{min-height:130px;resize:vertical}
-textarea::placeholder,input::placeholder{color:#8aa4cc}
-button{
-  border:0;border-radius:8px;background:#2563eb;color:#fff;
-  padding:11px 18px;font:inherit;cursor:pointer;margin-top:12px
-}
-button:disabled{opacity:.6}
-.secondary{background:#29436e}
-.tip{font-size:13px;line-height:1.6;color:#9db8e0}
-.status{margin-top:12px;font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere}
-.msg-item{background:#0d244e;padding:14px;border-radius:8px;margin:12px 0}
-.msg-content{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.6}
-.msg-time{font-size:12px;color:#9db8e0;margin-top:8px}
-.hidden{display:none}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#10203a">
+  <title>lucky作业通 · 留言板</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 20px; background: #f2f5fa; color: #18243a;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+        "Microsoft YaHei", sans-serif;
+    }
+    .container { max-width: 720px; margin: 0 auto; }
+    header {
+      padding: 24px; color: white;
+      background: linear-gradient(135deg, #10203a, #244e83);
+      border-radius: 18px; margin-bottom: 18px;
+    }
+    header h1 { margin: 0 0 8px; font-size: 26px; }
+    header p { margin: 0; color: #d7e5f8; font-size: 14px; }
+    .panel {
+      background: white; padding: 20px; border-radius: 16px;
+      margin-bottom: 18px; box-shadow: 0 4px 18px #10203a0c;
+    }
+    h2 { font-size: 18px; margin: 0 0 14px; }
+    textarea, input {
+      display: block; width: 100%; padding: 12px;
+      border: 1px solid #d6dce6; border-radius: 10px;
+      font: inherit; background: white; color: #18243a;
+      margin: 8px 0 12px;
+    }
+    textarea { min-height: 110px; resize: vertical; }
+    button {
+      padding: 11px 16px; border: 0; border-radius: 10px;
+      background: #245da8; color: white; font: inherit; cursor: pointer;
+    }
+    button:disabled { opacity: .55; cursor: not-allowed; }
+    button.secondary { background: #e9eef6; color: #203653; }
+    button.danger { background: #b42332; }
+    .toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .status {
+      color: #68758a; font-size: 13px; white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+    .message { padding: 14px 0; border-bottom: 1px solid #e8edf4; }
+    .message:last-child { border-bottom: 0; }
+    .message-content { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.65; }
+    .message-time { margin-top: 7px; font-size: 12px; color: #8490a2; }
+    .empty { padding: 24px 0; text-align: center; color: #8490a2; }
+    .warning {
+      font-size: 13px; line-height: 1.6; color: #8b3c21;
+      background: #fff4eb; padding: 12px; border-radius: 10px; margin-bottom: 14px;
+    }
+    footer { text-align: center; color: #8993a4; font-size: 12px; padding: 10px 0 24px; }
+  </style>
 </head>
 <body>
-<div class="container">
-  <h1>✅ lucky作业通</h1>
-  <div class="subtitle">匿名提交 · 云端同步</div>
+  <main class="container">
+    <header>
+      <h1>lucky作业通</h1>
+      <p>留言板 · 你的建议，我们认真倾听</p>
+    </header>
 
-  <section class="card">
-    <h2>提交建议</h2>
-    <textarea id="content" maxlength="2000"
-      placeholder="请输入你的建议或反馈，最多2000字"></textarea>
-    <button id="submitBtn">提交消息</button>
-    <button class="secondary" id="refreshBtn">刷新消息</button>
-    <p class="tip">请勿提交密码、手机号、住址等个人隐私信息。</p>
-    <div id="submitStatus" class="status"></div>
-  </section>
+    <section class="panel">
+      <h2>提交留言</h2>
+      <form id="messageForm">
+        <label for="messageInput">留言内容</label>
+        <textarea id="messageInput" maxlength="2000"
+          placeholder="请输入你的留言或建议……" required></textarea>
+        <div class="toolbar">
+          <button id="submitBtn" type="submit">提交留言</button>
+          <span id="submitStatus" class="status" role="status"></span>
+        </div>
+      </form>
+    </section>
 
-  <section class="card">
-    <h2>最新消息 <span id="count"></span></h2>
-    <div id="messages">正在加载云端消息…</div>
-    <div id="listStatus" class="status"></div>
-  </section>
+    <section class="panel">
+      <div class="toolbar" style="justify-content:space-between">
+        <h2 style="margin:0">云端留言</h2>
+        <button id="refreshBtn" class="secondary" type="button">刷新留言</button>
+      </div>
+      <p id="listStatus" class="status" role="status">正在加载云端消息……</p>
+      <div id="messageList" aria-live="polite"></div>
+    </section>
 
-  <section class="card">
-    <h2>开发者面板</h2>
-    <input id="devKey" type="password" placeholder="开发者密钥">
-    <button id="unlockBtn">进入面板</button>
-    <button id="exportBtn" class="hidden">导出 CSV</button>
-    <button id="lockBtn" class="secondary hidden">退出面板</button>
-    <p class="tip">开发者密码仅用于本页的简单验证，不是安全的服务器端认证。</p>
-    <div id="devStatus" class="status"></div>
-  </section>
-</div>
+    <section class="panel">
+      <h2>管理员操作</h2>
+      <div class="warning">
+        此操作会删除云端全部留言，且无法通过本页面恢复。请谨慎操作。
+      </div>
+      <form id="adminForm">
+        <label for="adminPassword">管理员口令</label>
+        <input id="adminPassword" type="password"
+          autocomplete="current-password" maxlength="256"
+          placeholder="输入管理员口令" required>
+        <button id="clearBtn" class="danger" type="submit">清空全部留言</button>
+        <p id="adminStatus" class="status" role="status"></p>
+      </form>
+    </section>
 
-<script>
-/* ===== Supabase 配置 ===== */
-const SUPABASE_URL =
-  "https://mlfgkximylqcggggfmdf.supabase.co";
+    <footer>lucky作业通 · 留言板</footer>
+  </main>
 
-const SUPABASE_KEY =
-  "sb_publishable_QTjDwTuc4F-AW38DxBfbdg_SCSdYQo_";
+  <script>
+    "use strict";
 
-/* 仅用于显示导出按钮，不具备真正的管理员安全性 */
-const DEV_KEY = "lqy825825";
+    const SUPABASE_URL =
+      "https://mlfgkximylqcggggfmdf.supabase.co";
 
-const $ = id => document.getElementById(id);
-let messages = [];
-let unlocked = false;
+    const SUPABASE_KEY =
+      "sb_publishable_QTjDwTuc4F-AW38DxBfbdg_SCSdYQo_";
 
-function configured(){
-  return SUPABASE_KEY.startsWith("sb_publishable_");
-}
+    const CLEAR_FUNCTION_URL =
+      SUPABASE_URL + "/functions/v1/admin-clear-messages";
 
-async function api(path, options = {}){
-  const response = await fetch(
-    SUPABASE_URL + "/rest/v1/" + path,
-    {
-      ...options,
-      headers:{
-        apikey:SUPABASE_KEY,
-        Authorization:"Bearer " + SUPABASE_KEY,
-        "Content-Type":"application/json",
-        ...(options.headers || {})
+    const $ = (id) => document.getElementById(id);
+
+    function setStatus(id, message) {
+      $(id).textContent = message;
+    }
+
+    async function api(path, options = {}) {
+      const response = await fetch(
+        SUPABASE_URL + "/rest/v1/" + path,
+        {
+          ...options,
+          headers: {
+            apikey: SUPABASE_KEY,
+            "Content-Type": "application/json",
+            ...(options.headers || {})
+          }
+        }
+      );
+
+      const text = await response.text();
+      let data = null;
+
+      try {
+        data = text ? JSON.parse(text) : null;
+      } catch {
+        data = text;
+      }
+
+      if (!response.ok) {
+        const message = data && typeof data === "object"
+          ? data.message || data.details || data.hint
+          : data;
+        throw new Error(message || "请求失败，HTTP " + response.status);
+      }
+
+      return data;
+    }
+
+    function formatTime(value) {
+      if (!value) return "时间未知";
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return "时间未知";
+
+      return date.toLocaleString("zh-CN", {
+        year: "numeric", month: "2-digit", day: "2-digit",
+        hour: "2-digit", minute: "2-digit"
+      });
+    }
+
+    function renderMessages(rows) {
+      const list = $("messageList");
+      list.replaceChildren();
+
+      if (!Array.isArray(rows) || rows.length === 0) {
+        const empty = document.createElement("div");
+        empty.className = "empty";
+        empty.textContent = "目前还没有留言";
+        list.appendChild(empty);
+        return;
+      }
+
+      for (const row of rows) {
+        const item = document.createElement("article");
+        item.className = "message";
+
+        const content = document.createElement("div");
+        content.className = "message-content";
+        content.textContent = row.content || "";
+
+        const time = document.createElement("div");
+        time.className = "message-time";
+        time.textContent = formatTime(row.create_time);
+
+        item.append(content, time);
+        list.appendChild(item);
       }
     }
-  );
 
-  if(!response.ok){
-    const errorText = await response.text();
-    throw new Error(errorText || "HTTP " + response.status);
-  }
+    async function loadMessages() {
+      $("refreshBtn").disabled = true;
+      setStatus("listStatus", "正在加载云端消息……");
 
-  const text = await response.text();
-  return text ? JSON.parse(text) : null;
-}
-
-function timeText(value){
-  if(!value) return "时间未知";
-  const date = new Date(value);
-  return isNaN(date.getTime())
-    ? String(value)
-    : date.toLocaleString("zh-CN",{hour12:false});
-}
-
-function status(id, text){
-  $(id).textContent = text;
-}
-
-async function loadMessages(){
-  if(!configured()){
-    status("listStatus","请先填写 Supabase Publishable key。");
-    return;
-  }
-
-  $("refreshBtn").disabled = true;
-
-  try{
-    const rows = await api(
-      "suggestions?select=id,content,create_time&order=id.desc&limit=500"
-    );
-
-    messages = rows || [];
-
-    const host = $("messages");
-    host.replaceChildren();
-
-    $("count").textContent = "（共 " + messages.length + " 条）";
-
-    if(messages.length === 0){
-      host.textContent = "暂时没有消息。";
+      try {
+        const rows = await api(
+          "suggestions?select=id,content,create_time&order=id.desc&limit=500"
+        );
+        renderMessages(rows);
+        setStatus("listStatus", "加载完成，共 " + rows.length + " 条留言。");
+      } catch (error) {
+        setStatus("listStatus",
+          "读取失败，请检查 Publishable key、Data API 和 RLS 读取策略。\n" +
+          error.message);
+      } finally {
+        $("refreshBtn").disabled = false;
+      }
     }
 
-    for(const item of messages){
-      const article = document.createElement("article");
-      article.className = "msg-item";
+    $("refreshBtn").addEventListener("click", loadMessages);
 
-      const content = document.createElement("div");
-      content.className = "msg-content";
-      content.textContent = item.content;
+    $("messageForm").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const button = $("submitBtn");
+      const content = $("messageI
+nput").value.trim();
 
-      const time = document.createElement("div");
-      time.className = "msg-time";
-      time.textContent = timeText(item.create_time);
+      if (!content) {
+        setStatus("submitStatus", "请先输入留言内容。");
+        return;
+      }
 
-      article.append(content,time);
-      host.appendChild(article);
-    }
+      const button = $("submitBtn");
+      button.disabled = true;
+      setStatus("submitStatus", "正在提交……");
 
-    status("listStatus","云端消息已同步。");
-  }catch(error){
-    status("listStatus",
-      "读取失败，请检查 Publishable key、Data API 和 RLS 读取策略。\n"
-      + error.message
-    );
-  }finally{
-    $("refreshBtn").disabled = false;
-  }
-}
+      try {
+        await api("suggestions", {
+          method: "POST",
+          headers: { Prefer: "return=minimal" },
+          body: JSON.stringify({ content })
+        });
 
-$("submitBtn").addEventListener("click", async()=>{
-  const content = $("content").value.trim();
-
-  if(!content){
-    status("submitStatus","请输入消息内容。");
-    return;
-  }
-
-  if(!configured()){
-    status("submitStatus","请先配置 Supabase Publishable key。");
-    return;
-  }
-
-  $("submitBtn").disabled = true;
-  status("submitStatus","正在提交…");
-
-  try{
-    await api("suggestions",{
-      method:"POST",
-      headers:{"Prefer":"return=minimal"},
-      body:JSON.stringify({content})
+        $("messageInput").value = "";
+        setStatus("submitStatus", "留言提交成功。");
+        await loadMessages();
+      } catch (error) {
+        setStatus("submitStatus", "提交失败：" + error.message);
+      } finally {
+        button.disabled = false;
+      }
     });
 
-    $("content").value = "";
-    status("submitStatus","提交成功！");
-    await loadMessages();
-  }catch(error){
-    status("submitStatus",
-      "提交失败，请检查 INSERT RLS 策略。\n" + error.message
-    );
-  }finally{
-    $("submitBtn").disabled = false;
-  }
-});
+    $("adminForm").addEventListener("submit", async (event) => {
+      event.preventDefault();
 
-$("refreshBtn").addEventListener("click",loadMessages);
+      const password = $("adminPassword").value;
 
-$("unlockBtn").addEventListener("click",()=>{
-  if($("devKey").value === DEV_KEY){
-    unlocked = true;
-    $("devKey").classList.add("hidden");
-    $("unlockBtn").classList.add("hidden");
-    $("exportBtn").classList.remove("hidden");
-    $("lockBtn").classList.remove("hidden");
-    status("devStatus","已进入面板，可以导出当前加载的消息。");
-  }else{
-    status("devStatus","密钥错误。");
-  }
-});
+      if (!password) {
+        setStatus("adminStatus", "请输入管理员口令。");
+        return;
+      }
 
-$("lockBtn").addEventListener("click",()=>{
-  unlocked = false;
-  $("devKey").value = "";
-  $("devKey").classList.remove("hidden");
-  $("unlockBtn").classList.remove("hidden");
-  $("exportBtn").classList.add("hidden");
-  $("lockBtn").classList.add("hidden");
-  status("devStatus","已退出面板。");
-});
+      if (!confirm("确定要删除云端全部留言吗？此操作无法撤销！")) {
+        return;
+      }
 
-$("exportBtn").addEventListener("click",()=>{
-  if(!unlocked) return;
+      const button = $("clearBtn");
+      button.disabled = true;
+      setStatus("adminStatus", "正在验证管理员……");
 
-  const quote = value =>
-    '"' + String(value ?? "").replace(/"/g,'""') + '"';
+      try {
+        const response = await fetch(CLEAR_FUNCTION_URL, {
+          method: "POST",
+          headers: {
+            apikey: SUPABASE_KEY,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            password,
+            confirm: true
+          })
+        });
 
-  const csv = "\uFEFF" + [
-    ["id","content","create_time"],
-    ...messages.map(item=>[
-      item.id,item.content,item.create_time
-    ])
-  ].map(row=>row.map(quote).join(",")).join("\r\n");
+        const text = await response.text();
+        let result;
 
-  const blob = new Blob([csv],{
-    type:"text/csv;charset=utf-8;"
-  });
+        try {
+          result = text ? JSON.parse(text) : {};
+        } catch {
+          throw new Error("服务器返回内容无法解析");
+        }
 
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "lucky-zuoyetong-messages.csv";
-  a.click();
-  URL.revokeObjectURL(url);
-});
+        if (!response.ok || !result.success) {
+          throw new Error(result.error || "操作失败，HTTP " + response.status);
+        }
 
-loadMessages();
-</script>
+        $("adminPassword").value = "";
+        await loadMessages();
+        setStatus("adminStatus", "留言已清空。");
+      } catch (error) {
+        setStatus("adminStatus", "操作失败：" + error.message);
+      } finally {
+        button.disabled = false;
+      }
+    });
+
+    window.loadMessages = loadMessages;
+    loadMessages();
+  </script>
 </body>
 </html>

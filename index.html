@@ -1,268 +1,415 @@
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a1f44">
-<title>lucky作业通</title>
+<title>lucky作业通 · 留言板</title>
 <style>
 *{box-sizing:border-box}
 body{
-  margin:0;padding:24px 14px;min-height:100vh;
+  margin:0;padding:22px 16px;min-height:100vh;
   background:#0a1f44;color:#fff;
-  font-family:system-ui,"Microsoft Yahei",sans-serif
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif
 }
-.container{max-width:720px;margin:auto}
-h1{text-align:center;color:#e8f1ff;margin-bottom:8px}
-.subtitle{text-align:center;color:#9db8e0;font-size:14px;margin-bottom:24px}
+.container{max-width:760px;margin:auto}
+header{
+  padding:26px;margin-bottom:20px;border-radius:16px;
+  background:linear-gradient(135deg,#122c5c,#1d4e89);
+  box-shadow:0 4px 16px #0004
+}
+h1{text-align:center;margin:0 0 8px;font-size:27px;letter-spacing:2px}
+header p{text-align:center;margin:0;color:#c6dcff;font-size:14px}
 .card{
-  background:#122c5c;border-radius:12px;padding:22px;
-  margin-bottom:20px;box-shadow:0 4px 16px #0003
+  background:#122c5c;border-radius:14px;padding:22px;
+  margin-bottom:18px;box-shadow:0 4px 16px #0003
 }
-h2{font-size:19px;color:#d6e4ff;margin-top:0}
+h2{margin:0 0 16px;font-size:19px;color:#d6e4ff}
+label{font-size:14px;color:#d6e4ff}
 textarea,input{
-  width:100%;padding:13px;border:1px solid #274574;
-  border-radius:8px;background:#0d244e;color:#fff;font:inherit
+  display:block;width:100%;margin:8px 0 12px;padding:12px;
+  border:1px solid #294879;border-radius:9px;
+  background:#0d244e;color:#fff;font:inherit;outline:none
 }
-textarea{min-height:130px;resize:vertical}
+textarea{min-height:120px;resize:vertical;line-height:1.6}
 textarea::placeholder,input::placeholder{color:#8aa4cc}
 button{
-  border:0;border-radius:8px;background:#2563eb;color:#fff;
-  padding:11px 18px;font:inherit;cursor:pointer;margin-top:12px
+  border:0;border-radius:8px;padding:11px 16px;
+  background:#2563eb;color:#fff;font:inherit;cursor:pointer
 }
-button:disabled{opacity:.6}
-.secondary{background:#29436e}
-.tip{font-size:13px;line-height:1.6;color:#9db8e0}
-.status{margin-top:12px;font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere}
-.msg-item{background:#0d244e;padding:14px;border-radius:8px;margin:12px 0}
-.msg-content{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.6}
-.msg-time{font-size:12px;color:#9db8e0;margin-top:8px}
-.hidden{display:none}
+button:hover{filter:brightness(1.1)}
+button:disabled{opacity:.55;cursor:not-allowed}
+.secondary{background:#315078}
+.danger{background:#dc2626}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.status{
+  margin:10px 0 0;min-height:18px;color:#a9c5ef;
+  font-size:13px;white-space:pre-wrap;overflow-wrap:anywhere
+}
+.tip{margin-top:10px;color:#9db8e0;font-size:13px;line-height:1.6}
+.msg-item{
+  background:#0d244e;padding:14px;border-radius:9px;
+  margin:12px 0;border:1px solid #1b3b6b
+}
+.msg-content{line-height:1.65;white-space:pre-wrap;overflow-wrap:anywhere}
+.msg-time{margin-top:8px;color:#8faad1;font-size:12px}
+.msg-actions{margin-top:12px}
+.empty{padding:24px 0;color:#9db8e0;text-align:center}
+.hidden{display:none!important}
+footer{text-align:center;color:#7895bf;font-size:12px;padding:6px 0 20px}
 </style>
 </head>
 <body>
-<div class="container">
-  <h1>✅ lucky作业通</h1>
-  <div class="subtitle">匿名提交 · 云端同步</div>
+<main class="container">
+<header>
+  <h1>lucky作业通</h1>
+  <p>留言板 · 你的建议，我们认真倾听</p>
+</header>
 
-  <section class="card">
-    <h2>提交建议</h2>
-    <textarea id="content" maxlength="2000"
-      placeholder="请输入你的建议或反馈，最多2000字"></textarea>
-    <button id="submitBtn">提交消息</button>
-    <button class="secondary" id="refreshBtn">刷新消息</button>
-    <p class="tip">请勿提交密码、手机号、住址等个人隐私信息。</p>
-    <div id="submitStatus" class="status"></div>
-  </section>
+<section class="card">
+  <h2>提交留言</h2>
+  <form id="messageForm">
+    <label for="messageInput">留言内容（匿名提交）</label>
+    <textarea id="messageInput" maxlength="2000"
+      placeholder="请输入你的留言或建议……" required></textarea>
+    <button id="submitBtn" type="submit">提交留言</button>
+    <p id="submitStatus" class="status" role="status"></p>
+  </form>
+</section>
 
-  <section class="card">
-    <h2>最新消息 <span id="count"></span></h2>
-    <div id="messages">正在加载云端消息…</div>
-    <div id="listStatus" class="status"></div>
-  </section>
+<section class="card">
+  <h2>管理员查看留言</h2>
+  <form id="adminForm">
+    <label for="adminKey">开发者密钥</label>
+    <input id="adminKey" type="password" maxlength="256"
+      autocomplete="off" placeholder="输入密钥后查看留言" required>
+    <div class="toolbar">
+      <button id="loginBtn" type="submit">验证并查看</button>
+      <button id="logoutBtn" class="secondary hidden" type="button">退出管理员模式</button>
+    </div>
+    <p id="adminStatus" class="status" role="status"></p>
+  </form>
+</section>
 
-  <section class="card">
-    <h2>开发者面板</h2>
-    <input id="devKey" type="password" placeholder="开发者密钥">
-    <button id="unlockBtn">进入面板</button>
-    <button id="exportBtn" class="hidden">导出 CSV</button>
-    <button id="lockBtn" class="secondary hidden">退出面板</button>
-    <p class="tip">开发者密码仅用于本页的简单验证，不是安全的服务器端认证。</p>
-    <div id="devStatus" class="status"></div>
-  </section>
-</div>
+<section id="adminPanel" class="card hidden">
+  <div class="toolbar" style="justify-content:space-between">
+    <h2 style="margin:0">云端留言</h2>
+    <button id="refreshBtn" class="secondary" type="button">刷新</button>
+  </div>
+  <p class="tip">管理员模式已开启。留言保存在 Supabase 云端。</p>
+  <div class="toolbar" style="margin-top:14px">
+    <button id="exportBtn" class="secondary" type="button">导出 CSV</button>
+    <button id="clearBtn" class="danger" type="button">清空全部留言</button>
+  </div>
+  <p id="listStatus" class="status" role="status">尚未加载。</p>
+  <div id="messageList"></div>
+</section>
+
+<footer>lucky作业通 · 留言板</footer>
+</main>
 
 <script>
-/* ===== Supabase 配置 ===== */
+"use strict";
+
 const SUPABASE_URL =
   "https://mlfgkximylqcggggfmdf.supabase.co";
 
 const SUPABASE_KEY =
   "sb_publishable_QTjDwTuc4F-AW38DxBfbdg_SCSdYQo_";
 
-/* 仅用于显示导出按钮，不具备真正的管理员安全性 */
 const DEV_KEY = "lqy825825";
 
 const $ = id => document.getElementById(id);
-let messages = [];
-let unlocked = false;
 
-function configured(){
-  return SUPABASE_KEY.startsWith("sb_publishable_");
+let adminUnlocked = false;
+let cachedMessages = [];
+
+function setStatus(id, message) {
+  $(id).textContent = message;
 }
 
-async function api(path, options = {}){
+async function api(path, options = {}) {
   const response = await fetch(
-    SUPABASE_URL + "/rest/v1/" + path,
+    `${SUPABASE_URL}/rest/v1/${path}`,
     {
       ...options,
-      headers:{
-        apikey:SUPABASE_KEY,
-        Authorization:"Bearer " + SUPABASE_KEY,
-        "Content-Type":"application/json",
+      headers: {
+        apikey: SUPABASE_KEY,
+        "Content-Type": "application/json",
         ...(options.headers || {})
       }
     }
   );
 
-  if(!response.ok){
-    const errorText = await response.text();
-    throw new Error(errorText || "HTTP " + response.status);
+  const raw = await response.text();
+  let data = null;
+
+  try {
+    data = raw ? JSON.parse(raw) : null;
+  } catch {
+    data = raw;
   }
 
-  const text = await response.text();
-  return text ? JSON.parse(text) : null;
+  if (!response.ok) {
+    const message = data && typeof data === "object"
+      ? data.message || data.details || data.hint
+      : data;
+
+    throw new Error(
+      message || `请求失败（HTTP ${response.status}）`
+    );
+  }
+
+  return data;
 }
 
-function timeText(value){
-  if(!value) return "时间未知";
+function formatTime(value) {
+  if (!value) return "时间未知";
+
   const date = new Date(value);
-  return isNaN(date.getTime())
-    ? String(value)
-    : date.toLocaleString("zh-CN",{hour12:false});
+
+  if (Number.isNaN(date.getTime())) return value;
+
+  return date.toLocaleString("zh-CN");
 }
 
-function status(id, text){
-  $(id).textContent = text;
-}
+function renderMessages(rows) {
+  const list = $("messageList");
+  list.replaceChildren();
 
-async function loadMessages(){
-  if(!configured()){
-    status("listStatus","请先填写 Supabase Publishable key。");
+  if (!rows.length) {
+    const empty = document.createElement("div");
+    empty.className = "empty";
+    empty.textContent = "目前还没有留言";
+    list.appendChild(empty);
     return;
   }
 
+  for (const row of rows) {
+    const item = document.createElement("article");
+    item.className = "msg-item";
+
+    const content = document.createElement("div");
+    content.className = "msg-content";
+    content.textContent = row.content || "";
+
+    const time = document.createElement("div");
+    time.className = "msg-time";
+    time.textContent = "提交时间：" + formatTime(row.create_time);
+
+    const actions = document.createElement("div");
+    actions.className = "toolbar msg-actions";
+
+    const del = document.createElement("button");
+    del.type = "button";
+    del.className = "danger";
+    del.textContent = "删除此条";
+    del.addEventListener("click", () => deleteMessage(row.id));
+
+    actions.appendChild(del);
+    item.append(content, time, actions);
+    list.appendChild(item);
+  }
+}
+
+async function loadMessages() {
+  if (!adminUnlocked) return;
+
   $("refreshBtn").disabled = true;
+  setStatus("listStatus", "正在读取云端留言……");
 
-  try{
+  try {
     const rows = await api(
-      "suggestions?select=id,content,create_time&order=id.desc&limit=500"
+      "suggestions?select=id,content,create_time&order=id.desc&limit=1000"
     );
 
-    messages = rows || [];
+    cachedMessages = Array.isArray(rows) ? rows : [];
+    renderMessages(cachedMessages);
 
-    const host = $("messages");
-    host.replaceChildren();
-
-    $("count").textContent = "（共 " + messages.length + " 条）";
-
-    if(messages.length === 0){
-      host.textContent = "暂时没有消息。";
-    }
-
-    for(const item of messages){
-      const article = document.createElement("article");
-      article.className = "msg-item";
-
-      const content = document.createElement("div");
-      content.className = "msg-content";
-      content.textContent = item.content;
-
-      const time = document.createElement("div");
-      time.className = "msg-time";
-      time.textContent = timeText(item.create_time);
-
-      article.append(content,time);
-      host.appendChild(article);
-    }
-
-    status("listStatus","云端消息已同步。");
-  }catch(error){
-    status("listStatus",
-      "读取失败，请检查 Publishable key、Data API 和 RLS 读取策略。\n"
-      + error.message
+    setStatus(
+      "listStatus",
+      `加载完成，共 ${cachedMessages.length} 条留言。`
     );
-  }finally{
+  } catch (error) {
+    setStatus(
+      "listStatus",
+      `读取失败：${error.message}\n请检查 Publishable key、Data API 和 RLS 的 SELECT 策略。`
+    );
+  } finally {
     $("refreshBtn").disabled = false;
   }
 }
 
-$("submitBtn").addEventListener("click", async()=>{
-  const content = $("content").value.trim();
+$("messageForm").addEventListener("submit", async event => {
+  event.preventDefault();
 
-  if(!content){
-    status("submitStatus","请输入消息内容。");
+  const button = $("submitBtn");
+  const content = $("messageInput").value.trim();
+
+  if (!content) {
+    setStatus("submitStatus", "请先输入留言内容。");
     return;
   }
 
-  if(!configured()){
-    status("submitStatus","请先配置 Supabase Publishable key。");
-    return;
-  }
+  button.disabled = true;
+  setStatus("submitStatus", "正在提交……");
 
-  $("submitBtn").disabled = true;
-  status("submitStatus","正在提交…");
-
-  try{
-    await api("suggestions",{
-      method:"POST",
-      headers:{"Prefer":"return=minimal"},
-      body:JSON.stringify({content})
+  try {
+    await api("suggestions", {
+      method: "POST",
+      headers: { Prefer: "return=minimal" },
+      body: JSON.stringify({ content })
     });
 
-    $("content").value = "";
-    status("submitStatus","提交成功！");
-    await loadMessages();
-  }catch(error){
-    status("submitStatus",
-      "提交失败，请检查 INSERT RLS 策略。\n" + error.message
+    $("messageInput").value = "";
+    setStatus("submitStatus", "提交成功，感谢你的建议！");
+
+    if (adminUnlocked) {
+      await loadMessages();
+    }
+  } catch (error) {
+    setStatus("submitStatus", "提交失败：" + error.message);
+  } finally {
+    button.disabled = false;
+  }
+});
+
+$("adminForm").addEventListener("submit", async event => {
+  event.preventDefault();
+
+  const enteredKey = $("adminKey").value;
+
+  if (enteredKey !== DEV_KEY) {
+    adminUnlocked = false;
+    $("adminPanel").classList.add("hidden");
+    $("logoutBtn").classList.add("hidden");
+    setStatus("adminStatus", "密钥错误。");
+    return;
+  }
+
+  adminUnlocked = true;
+  $("adminPanel").classList.remove("hidden");
+  $("logoutBtn").classList.remove("hidden");
+  $("adminKey").value = "";
+
+  setStatus("adminStatus", "验证成功。");
+  await loadMessages();
+});
+
+$("logoutBtn").addEventListener("click", () => {
+  adminUnlocked = false;
+  cachedMessages = [];
+
+  $("adminPanel").classList.add("hidden");
+  $("logoutBtn").classList.add("hidden");
+  $("messageList").replaceChildren();
+
+  setStatus("adminStatus", "已退出管理员模式。");
+  setStatus("listStatus", "尚未加载。");
+});
+
+$("refreshBtn").addEventListener("click", loadMessages);
+
+async function deleteMessage(id) {
+  if (!adminUnlocked) return;
+
+  if (!confirm(`确定删除 ID 为 ${id} 的留言吗？此操作无法撤销。`)) {
+    return;
+  }
+
+  try {
+    await api(
+      `suggestions?id=eq.${encodeURIComponent(id)}`,
+      {
+        method: "DELETE",
+        headers: { Prefer: "return=minimal" }
+      }
     );
-  }finally{
-    $("submitBtn").disabled = false;
+
+    await loadMessages();
+  } catch (error) {
+    setStatus(
+      "listStatus",
+      `删除失败：${error.message}\n请检查 suggestions 表的 DELETE RLS 策略。`
+    );
+  }
+}
+
+$("clearBtn").addEventListener("click", async () => {
+  if (!adminUnlocked) return;
+
+  if (!confirm("确定清空全部留言吗？此操作无法撤销！")) {
+    return;
+  }
+
+  if (!confirm("再次确认：真的要删除所有云端留言吗？")) {
+    return;
+  }
+
+  $("clearBtn").disabled = true;
+
+  try {
+    await api(
+      "suggestions?id=gte.0",
+      {
+        method: "DELETE",
+        headers: { Prefer: "return=minimal" }
+      }
+    );
+
+    await loadMessages();
+    setStatus("listStatus", "清空请求已完成。");
+  } catch (error) {
+    setStatus(
+      "listStatus",
+      `清空失败：${error.message}\n请检查 suggestions 表的 DELETE RLS 策略。`
+    );
+  } finally {
+    $("clearBtn").disabled = false;
   }
 });
 
-$("refreshBtn").addEventListener("click",loadMessages);
+function csvCell(value) {
+  let text = String(value ?? "");
 
-$("unlockBtn").addEventListener("click",()=>{
-  if($("devKey").value === DEV_KEY){
-    unlocked = true;
-    $("devKey").classList.add("hidden");
-    $("unlockBtn").classList.add("hidden");
-    $("exportBtn").classList.remove("hidden");
-    $("lockBtn").classList.remove("hidden");
-    status("devStatus","已进入面板，可以导出当前加载的消息。");
-  }else{
-    status("devStatus","密钥错误。");
+  if (/^[=+\-@\t\r]/.test(text)) {
+    text = "'" + text;
   }
-});
 
-$("lockBtn").addEventListener("click",()=>{
-  unlocked = false;
-  $("devKey").value = "";
-  $("devKey").classList.remove("hidden");
-  $("unlockBtn").classList.remove("hidden");
-  $("exportBtn").classList.add("hidden");
-  $("lockBtn").classList.add("hidden");
-  status("devStatus","已退出面板。");
-});
+  return '"' + text.replace(/"/g, '""') + '"';
+}
 
-$("exportBtn").addEventListener("click",()=>{
-  if(!unlocked) return;
+$("exportBtn").addEventListener("click", () => {
+  if (!adminUnlocked) return;
 
-  const quote = value =>
-    '"' + String(value ?? "").replace(/"/g,'""') + '"';
-
-  const csv = "\uFEFF" + [
-    ["id","content","create_time"],
-    ...messages.map(item=>[
-      item.id,item.content,item.create_time
+  const rows = [
+    ["ID", "留言内容", "提交时间"],
+    ...cachedMessages.map(row => [
+      row.id, row.content, row.create_time
     ])
-  ].map(row=>row.map(quote).join(",")).join("\r\n");
+  ];
 
-  const blob = new Blob([csv],{
-    type:"text/csv;charset=utf-8;"
-  });
+  const csv = "\uFEFF" +
+    rows.map(row => row.map(csvCell).join(",")).join("\r\n");
+
+  const blob = new Blob(
+    [csv],
+    { type: "text/csv;charset=utf-8;" }
+  );
 
   const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "lucky-zuoyetong-messages.csv";
-  a.click();
+  const link = document.createElement("a");
+
+  link.href = url;
+  link.download = "lucky-zuoyetong-messages.csv";
+
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+
   URL.revokeObjectURL(url);
 });
-
-loadMessages();
 </script>
 </body>
 </html>

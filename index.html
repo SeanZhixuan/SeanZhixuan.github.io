@@ -218,8 +218,7 @@
     $("messageForm").addEventListener("submit", async (event) => {
       event.preventDefault();
       const button = $("submitBtn");
-      const content = $("messageI
-nput").value.trim();
+      const content = $("messageInput").value.trim();
 
       if (!content) {
         setStatus("submitStatus", "请先输入留言内容。");
